@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="SecondInCommand - Safety Overrides:jar">
+    <output-path>$PROJECT_DIR$/jars</output-path>
+    <root id="archive" name="SecondInCommandAddon.jar">
+      <element id="module-output" name="SecondInCommand - Safety Overrides" />
+    </root>
+  </artifact>
+</component>
