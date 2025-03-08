@@ -179,6 +179,14 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
             subelement.addSpacer(5f)
 
             addAptitudeRowParent(subelement, data.getOfficerInSlot(7), 7)
+
+            subelement.addSpacer(5f)
+
+            addAptitudeRowParent(subelement, data.getOfficerInSlot(8), 8)
+
+            subelement.addSpacer(5f)
+
+            addAptitudeRowParent(subelement, data.getOfficerInSlot(9), 9)
         } else {
 
             subelement.addSpacer(20f)
