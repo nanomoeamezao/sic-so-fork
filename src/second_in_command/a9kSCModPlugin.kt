@@ -24,7 +24,7 @@ class a9kSCModPlugin : BaseModPlugin() {
     }
 
     override fun onGameLoad(newGame: Boolean) {
-        if (getPlayerData().getAllActiveOfficers().size <4) {
+        if (getPlayerData().getActiveOfficers().size <9) {
             getPlayerData().activeOfficers.add(null)
         }
 
