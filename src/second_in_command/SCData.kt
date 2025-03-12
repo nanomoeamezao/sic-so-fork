@@ -10,6 +10,7 @@ import com.fs.starfarer.api.loading.VariantSource
 import com.fs.starfarer.api.util.Misc
 import org.apache.log4j.Level
 import second_in_command.misc.NPCOfficerGenerator
+import second_in_command.misc.SCSettings
 import second_in_command.misc.logger
 import second_in_command.skills.PlayerLevelEffects
 import second_in_command.specs.SCBaseSkillPlugin
@@ -247,6 +248,11 @@ class SCData(var fleet: CampaignFleetAPI) : EveryFrameScript, FleetEventListener
         }
 
     }
+    //we noop that
+    fun remove4thOfficer() {
+
+    }
+
 
 
 
