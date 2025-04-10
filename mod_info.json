@@ -1,33 +1,36 @@
 {
-    "id":"second_in_command_addon", # For the convenience of troubleshooters, include your name and the mod name, not just an acronym.
-	"name":"Second-in-Command - Safety Overrides", # Displayed to the player
-	"author":"Lukas04 for Second in Command, modifications by ymfah and Android9k",
-    "utility":"false",
-	"version":"1.2.13",
-	"description":"A mod that entirely reworks the games skill system. Not compatible with other skill reworks.",
-    "gameVersion": "0.97a-RC11",
-  	"jars":["jars/SecondInCommandAddon.jar"],
-  	"modPlugin":"second_in_command.a9kSCModPlugin",
-	  	"dependencies": [
-        {
-            "id": "lw_lazylib",
-            "name": "LazyLib",
-        },
-        {
-            "id": "MagicLib",
-            "name": "MagicLib",
-        },
-        {
-            "id": "lunalib",
-            "name": "LunaLib",
-        },
-		{
-			"id": "shaderLib",
-			"name": "GraphicsLib",
-		},
-		{
-			"id": "second_in_command",
-			"name": "Second-in-Command",
-		},
-    ],
+  "id": "second_in_command_addon",
+  "name": "Second-in-Command - Safety Overrides",
+  "author": "Lukas04 for Second in Command, modifications by ymfah and Android9k",
+  "utility": "false",
+  "version": "1.2.14",
+  "description": "A mod that entirely reworks the games skill system. Not compatible with other skill reworks.",
+  "gameVersion": "0.98a-RC7",
+  "jars": [
+    "jars/SecondInCommandAddon.jar"
+  ],
+  "modPlugin": "second_in_command.a9kSCModPlugin",
+  "dependencies": [
+    {
+      "id": "lw_lazylib",
+      "name": "LazyLib"
+    },
+    {
+      "id": "MagicLib",
+      "name": "MagicLib"
+    },
+    {
+      "id": "lunalib",
+      "name": "LunaLib"
+    },
+    {
+      "id": "shaderLib",
+      "name": "GraphicsLib"
+    },
+    {
+      "id": "second_in_command",
+      "name": "Second-in-Command"
+    }
+  ],
+  "originalGameVersion": "0.97a-RC11"
 }
