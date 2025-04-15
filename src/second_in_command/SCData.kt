@@ -148,7 +148,7 @@ class SCData(var fleet: CampaignFleetAPI) : EveryFrameScript, FleetEventListener
 
     fun setOfficerInSlot(slotIndex: Int, officer: SCOfficer?) {
         var officerInSlot = getOfficerInSlot(slotIndex)
-        while (activeOfficers.size < 14){
+        while (activeOfficers.size < 15){
             activeOfficers.add(null)
         }
         activeOfficers[slotIndex] = officer
