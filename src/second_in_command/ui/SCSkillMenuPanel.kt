@@ -30,7 +30,7 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
     var width = 0f
     var height = 0f
     var isAtColony = false
-    var elementSize = 50f
+    var elementSize = 72f
 
     var rowParents = HashMap<Int, CustomPanelAPI>()
 
@@ -114,64 +114,66 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
 
         if (!title) {
 
-            subelement.addSpacer(5f)
+            subelement.addSpacer(20f)
 
             addAptitudeRowParent(subelement, data.getOfficerInSlot(0), 0)
 
-            subelement.addSpacer(5f)
+            subelement.addSpacer(20f)
 
             addAptitudeRowParent(subelement, data.getOfficerInSlot(1), 1)
 
-            subelement.addSpacer(5f)
+            subelement.addSpacer(20f)
 
             addAptitudeRowParent(subelement, data.getOfficerInSlot(2), 2)
 
-            subelement.addSpacer(5f)
+            subelement.addSpacer(20f)
 
             addAptitudeRowParent(subelement, data.getOfficerInSlot(3), 3)
 
-            subelement.addSpacer(5f)
+            subelement.addSpacer(20f)
 
             addAptitudeRowParent(subelement, data.getOfficerInSlot(4), 4)
 
-            subelement.addSpacer(5f)
+            subelement.addSpacer(20f)
 
             addAptitudeRowParent(subelement, data.getOfficerInSlot(5), 5)
 
-            subelement.addSpacer(5f)
+            subelement.addSpacer(20f)
 
             addAptitudeRowParent(subelement, data.getOfficerInSlot(6), 6)
 
-            subelement.addSpacer(5f)
+            subelement.addSpacer(20f)
 
             addAptitudeRowParent(subelement, data.getOfficerInSlot(7), 7)
 
-            subelement.addSpacer(5f)
+            subelement.addSpacer(20f)
 
             addAptitudeRowParent(subelement, data.getOfficerInSlot(8), 8)
 
-            subelement.addSpacer(5f)
+            subelement.addSpacer(20f)
 
             addAptitudeRowParent(subelement, data.getOfficerInSlot(9), 9)
 
-            subelement.addSpacer(5f)
+            subelement.addSpacer(20f)
 
             addAptitudeRowParent(subelement, data.getOfficerInSlot(10), 10)
-            subelement.addSpacer(5f)
+            subelement.addSpacer(20f)
 
             addAptitudeRowParent(subelement, data.getOfficerInSlot(11), 11)
 
-            subelement.addSpacer(5f)
+            subelement.addSpacer(20f)
 
             addAptitudeRowParent(subelement, data.getOfficerInSlot(12), 12)
 
-            subelement.addSpacer(5f)
+            subelement.addSpacer(20f)
 
             addAptitudeRowParent(subelement, data.getOfficerInSlot(13), 13)
 
-            subelement.addSpacer(5f)
+            subelement.addSpacer(20f)
 
             addAptitudeRowParent(subelement, data.getOfficerInSlot(14), 14)
+
+            subelement.addSpacer(20f)
         } else {
 
             subelement.addSpacer(20f)
