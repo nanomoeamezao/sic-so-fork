@@ -21,6 +21,7 @@ import second_in_command.ui.panels.AssosciatesManagePanelPlugin
 import second_in_command.ui.tooltips.OfficerTooltipCreator
 import second_in_command.ui.tooltips.SCSkillTooltipCreator
 
+@Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
 class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Boolean) {
 
 
@@ -72,7 +73,7 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
 
 
         width = parent.getWidth()
-        height = parent.getHeight() + 150f
+        height = parent.getHeight()
 
         panel = Global.getSettings().createCustom(width, height, null)
         parent.addComponent(panel)
@@ -87,58 +88,23 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
 
         panel = Global.getSettings().createCustom(width, height, null)
         parent.addComponent(panel)
-        element = panel.createUIElement(width, height, true)
-        panel.addUIElement(element)
-
-    /*    var descriptionPanel = panel.createCustomPanel(width, height, null)
-        panel.addComponent(descriptionPanel)
-        var descriptionElement = descriptionPanel.createUIElement(width, height, false)
-        descriptionPanel.addUIElement(descriptionElement)
-        descriptionElement.position.inTL(20f, 40f)
-
-        var para = descriptionElement.addPara("The character menu allows investing skill points in to different skills of your choice.  \n" +
-                "It is separated in to two sections, one for your personal skills, and one for the skills of your executive officers. \n" +
-                "\n" +
-                "Executive officers can be found throughout the world, and all of them have an aptitude they excel at.\n" +
-                "You can assign up to three executive officers at a time, each one provides a whole row of skills to choose from. \n" +
-                "Some officers may only be re-assigned when docked at a colony. \n" +
-                "", 0f, Misc.getTextColor(), Misc.getHighlightColor(), "skill points", "executive officers", "all of them have an aptitude they excel at", "up to three")*/
+        element = panel.createUIElement(width, height, false)
 
 
-        //element.addPara("Test Paragraph", 0f)
-
-       /* var previous: CustomPanelAPI? = null
-        for (skill in SCSpecStore.getSkillSpecs()) {
-            element.addSpacer(5f)
-            var next = SkillWidgetElement(false, true, skill.iconPath, Color(107,175,0,255), element, 72f, 72f)
-            if (previous != null) {
-                next.elementPanel.position.rightOfTop(previous, 6f)
-            }
-            previous = next.elementPanel
-        }*/
-
-        //addPlayerAptitudePanel()
 
         var playerPanel = SCPlayerPanel(this, data)
         playerPanel.init()
 
-
+        panel.addUIElement(element)
         addAptitudePanel()
-
-
-
-       // SkillWidgetElement(false, true, "", Color(255, 100, 0), element, 64f, 64f)
 
     }
 
 
     fun addAptitudePanel() {
 
-        var subpanel = Global.getSettings().createCustom(width, height, null)
-        element.addCustom(subpanel, 0f)
-        subpanel.position.inTL(20f, 285+5f+15)
-        var subelement = subpanel.createUIElement(width, height, false)
-        subpanel.addUIElement(subelement)
+        var subpanel = Global.getSettings().createCustom(width-20f, height, null)
+        var subelement = subpanel.createUIElement(width-20f, height-290F, true)
 
         subelement.addSectionHeading("Executive Officers", Alignment.MID, 0f).apply {
             position.inTL(-10f, 0f)
@@ -187,12 +153,34 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
             subelement.addSpacer(5f)
 
             addAptitudeRowParent(subelement, data.getOfficerInSlot(9), 9)
+
+            subelement.addSpacer(5f)
+
+            addAptitudeRowParent(subelement, data.getOfficerInSlot(10), 10)
+            subelement.addSpacer(5f)
+
+            addAptitudeRowParent(subelement, data.getOfficerInSlot(11), 11)
+
+            subelement.addSpacer(5f)
+
+            addAptitudeRowParent(subelement, data.getOfficerInSlot(12), 12)
+
+            subelement.addSpacer(5f)
+
+            addAptitudeRowParent(subelement, data.getOfficerInSlot(13), 13)
+
+            subelement.addSpacer(5f)
+
+            addAptitudeRowParent(subelement, data.getOfficerInSlot(14), 14)
         } else {
 
             subelement.addSpacer(20f)
 
             subelement.addPara("Executive Officers can only be selected in the campaign.", 0f, Misc.getTextColor(), Misc.getHighlightColor())
         }
+        element.addCustom(subpanel, 0f)
+        subpanel.position.inTL(20f, -10f)
+        subpanel.addUIElement(subelement)
 
 
 
