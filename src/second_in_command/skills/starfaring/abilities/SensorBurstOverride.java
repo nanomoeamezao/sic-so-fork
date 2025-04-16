@@ -8,6 +8,7 @@ import second_in_command.SCData;
 import second_in_command.SCUtils;
 
 public class SensorBurstOverride extends SensorBurstAbility {
+    boolean dontSlow = false;
 
     @Override
     protected void applyEffect(float amount, float level) {
@@ -35,7 +36,6 @@ public class SensorBurstOverride extends SensorBurstAbility {
 
         //fleet.getStats().getAccelerationMult().modifyMult(getModId(), 1f + (ACCELERATION_MULT - 1f) * level);
 
-        boolean dontSlow = false;
         if (fleet.getFleetData() != null) {
             SCData data = SCUtils.getFleetData(fleet);
             if (data.isSkillActive("sc_starfaring_starmapping")) {
@@ -50,6 +50,9 @@ public class SensorBurstOverride extends SensorBurstAbility {
 
     @Override
 	public float getCooldownDays() {
-		return 0f;
-	}
+        if (this.dontSlow = true){
+            return 0f;
+        }
+        return 1f;
+    }
 }
