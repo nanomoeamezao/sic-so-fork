@@ -18,7 +18,7 @@ class Barrage : SCBaseSkillPlugin() {
     override fun addTooltip(data: SCData, tooltip: TooltipMakerAPI) {
 
         tooltip.addPara("+100%% ammo for missile weapons", 0f, Misc.getHighlightColor(), Misc.getHighlightColor())
-        tooltip.addPara("+33%% missile weapon damage", 0f, Misc.getNegativeHighlightColor(), Misc.getNegativeHighlightColor())
+        tooltip.addPara("+33%% missile weapon damage", 0f, Misc.getHighlightColor(), Misc.getHighlightColor())
 
     }
 
