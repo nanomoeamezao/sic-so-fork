@@ -9,7 +9,7 @@ class a9kSCSettings : LunaSettingsListener {
 
 
     companion object {
-        var MOD_ID = "second_in_command_addon"
+        var MOD_ID = "second_in_command_addon_cheat"
 
 
         var maxLevel = LunaSettings.getInt(MOD_ID, "sc_officerMaxLevel")!!
