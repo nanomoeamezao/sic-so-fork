@@ -51,8 +51,6 @@ class SCData(var fleet: CampaignFleetAPI) : EveryFrameScript, FleetEventListener
         activeOfficers.add(null)
         activeOfficers.add(null)
 
-        fleet.addEventListener(this)
-
         officers.clear()
 
         isNPC = fleet != Global.getSector().playerFleet
@@ -238,6 +236,10 @@ class SCData(var fleet: CampaignFleetAPI) : EveryFrameScript, FleetEventListener
 
 
     override fun advance(amount: Float) {
+        //Has to be done to avoid ConcurrentModificationExceptions errors
+        if (!fleet.eventListeners.contains(this) && !fleet.isDespawning) {
+            fleet.addEventListener(this)
+        }
 
         for (skill in getAllActiveSkillsPlugins()) {
             skill.advance(this, amount)
