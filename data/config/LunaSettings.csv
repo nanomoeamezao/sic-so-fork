@@ -9,3 +9,5 @@ sc_officerMaxLevel,Officer Max Level,Int,5,,"Sets the max level of officers betw
 ,,,,,,,,
 sc_crPenalty,CR Penalty,Double,0.1,,Modifies how much CR is reduced when changing officers outside of the range of a colony. Changes require a restart to take effect.,0,1,
 sc_autoPoints,Automated Points Mult,Double,1,,Modifies how many Automated Points are given when acquiring skills that grant them.,0,100,
+sc_maxNpcAptitudes,Max Aptitudes for NPCs to have,Int,3,,Modifies how many Aptitiudes to generate for NPCs.Applies only on hard.,3,10,
+sc_maxNpcSkills,Max Skills for NPCs to have,Int,15,,Modifies how many Skills to generate for NPCs. Applies only on hard difficulty.,15,50,

@@ -17,7 +17,8 @@ class a9kSCSettings : LunaSettingsListener {
         var crPenalty = LunaSettings.getFloat(MOD_ID, "sc_crPenalty")!!
 
         var autoPoints = LunaSettings.getFloat(MOD_ID, "sc_autoPoints")!!
-
+        var maxNpcAptitudes = LunaSettings.getInt(MOD_ID, "sc_maxNpcAptitudes")!!
+        var maxNpcSkills = LunaSettings.getInt(MOD_ID, "sc_maxNpcSkills")!!
         var xpPerLevel = listOf<Float>(
            /* 0f, //LV0
             75000f, //LV1
@@ -59,6 +60,8 @@ class a9kSCSettings : LunaSettingsListener {
         crPenalty = LunaSettings.getFloat(MOD_ID, "sc_crPenalty")!!
         maxLevel = LunaSettings.getInt(MOD_ID, "sc_officerMaxLevel")!!
         autoPoints = LunaSettings.getFloat(MOD_ID, "sc_autoPoints")!!
+        maxNpcSkills = LunaSettings.getInt(MOD_ID, "sc_maxNpcSkills")!!
+        maxNpcAptitudes = LunaSettings.getInt(MOD_ID, "sc_maxNpcAptitudes")!!
     }
 
 

@@ -30,16 +30,9 @@ class AptitudeWarfare : SCBaseAptitudePlugin() {
         section1.addSkill("sc_warfare_surefire_impact")
         section1.addSkill("sc_warfare_tenacity")
         section1.addSkill("sc_warfare_redundant_bays")
-
+        section1.addSkill("sc_warfare_deflective_plating")
+        section1.addSkill("sc_warfare_overwhelming_force")
         addSection(section1)
-
-        var section2 = SCAptitudeSection(false, 4, "combat4")
-        section2.addSkill("sc_warfare_deflective_plating")
-        section2.addSkill("sc_warfare_overwhelming_force")
-        addSection(section2)
-
-
-
     }
 
     var factionsToPick = listOf(Factions.HEGEMONY, Factions.LUDDIC_CHURCH, Factions.LUDDIC_PATH)

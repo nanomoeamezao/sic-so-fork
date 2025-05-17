@@ -30,22 +30,12 @@ class AptitudeTechnology : SCBaseAptitudePlugin() {
         section1.addSkill("sc_technology_advanced_weaponry")
         section1.addSkill("sc_technology_deep_dive")
         section1.addSkill("sc_technology_reinforced_grid")
-
+        section1.addSkill("sc_technology_optimised_shields")
+        section1.addSkill("sc_technology_phase_coil_tuning")
+        section1.addSkill("sc_technology_focused_lenses")
+        section1.addSkill("sc_technology_neural_link")
+        section1.addSkill("sc_technology_makeshift_drones")
         addSection(section1)
-
-        var section2 = SCAptitudeSection(true, 2, "technology2")
-        section2.addSkill("sc_technology_optimised_shields")
-        section2.addSkill("sc_technology_phase_coil_tuning")
-        section2.addSkill("sc_technology_focused_lenses")
-        addSection(section2)
-
-        var section3 = SCAptitudeSection(true, 3, "technology4")
-        //section3.addSkill("sc_technology_energised")
-        section3.addSkill("sc_technology_neural_link")
-        section3.addSkill("sc_technology_makeshift_drones")
-        addSection(section3)
-
-
     }
 
     override fun getNPCFleetSpawnWeight(data: SCData, fleet: CampaignFleetAPI)  : Float {
