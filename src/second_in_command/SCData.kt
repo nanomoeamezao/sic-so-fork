@@ -58,15 +58,14 @@ class SCData(var fleet: CampaignFleetAPI) : EveryFrameScript, FleetEventListener
 
         if (!isNPC) {
             //For Beta
-           /* var aptitudes = SCSpecStore.getAptitudeSpecs().map { it.getPlugin() }
-            for (aptitude in aptitudes) {
-                if (aptitude.getId(<<) == "sc_fake_combat_aptitude") continue
+            /* var aptitudes = SCSpecStore.getAptitudeSpecs().map { it.getPlugin() }
+             for (aptitude in aptitudes) {
+                 if (aptitude.getId(<<) == "sc_fake_combat_aptitude") continue
 
-                var officer = SCUtils.createRandomSCOfficer(aptitude.getId())
-                addOfficerToFleet(officer)
-            }*/
-        }
-        else {
+                 var officer = SCUtils.createRandomSCOfficer(aptitude.getId())
+                 addOfficerToFleet(officer)
+             }*/
+        } else {
 
             clearCommanderSkills()
 
@@ -82,7 +81,6 @@ class SCData(var fleet: CampaignFleetAPI) : EveryFrameScript, FleetEventListener
     }
 
 
-
     fun getActiveOfficers() = activeOfficers.filterNotNull()
 
     fun getAllActiveOfficers() = activeOfficers
@@ -91,37 +89,34 @@ class SCData(var fleet: CampaignFleetAPI) : EveryFrameScript, FleetEventListener
 
         NPCOfficerGenerator.generateForFleet(this, fleet)
 
-       /* var officer1 = SCUtils.createRandomSCOfficer("sc_tactical", faction)
-        addOfficerToFleet(officer1)
-        officer1.addSkill("sc_tactical_spotters")
-        officer1.addSkill("sc_tactical_rapid_response")
-        officer1.addSkill("sc_tactical_pristine_condition")
-        setOfficerInSlot(0, officer1)
+        /* var officer1 = SCUtils.createRandomSCOfficer("sc_tactical", faction)
+         addOfficerToFleet(officer1)
+         officer1.addSkill("sc_tactical_spotters")
+         officer1.addSkill("sc_tactical_rapid_response")
+         officer1.addSkill("sc_tactical_pristine_condition")
+         setOfficerInSlot(0, officer1)
 
-        var officer2 = SCUtils.createRandomSCOfficer("sc_wolfpack", faction)
-        addOfficerToFleet(officer2)
-        officer2.addSkill("sc_wolfpack_safe_recovery")
-        officer2.addSkill("sc_wolfpack_low_profile")
-        officer2.addSkill("sc_wolfpack_coordinated_maneuvers")
-        officer2.addSkill("sc_wolfpack_jumpstart")
-        officer2.addSkill("sc_wolfpack_trapped_prey")
-        setOfficerInSlot(1, officer2)
+         var officer2 = SCUtils.createRandomSCOfficer("sc_wolfpack", faction)
+         addOfficerToFleet(officer2)
+         officer2.addSkill("sc_wolfpack_safe_recovery")
+         officer2.addSkill("sc_wolfpack_low_profile")
+         officer2.addSkill("sc_wolfpack_coordinated_maneuvers")
+         officer2.addSkill("sc_wolfpack_jumpstart")
+         officer2.addSkill("sc_wolfpack_trapped_prey")
+         setOfficerInSlot(1, officer2)
 
-        var officer3 = SCUtils.createRandomSCOfficer("sc_support", faction)
-        addOfficerToFleet(officer3)
-        officer3.addSkill("sc_support_huntsman")
-        setOfficerInSlot(2, officer3)*/
+         var officer3 = SCUtils.createRandomSCOfficer("sc_support", faction)
+         addOfficerToFleet(officer3)
+         officer3.addSkill("sc_support_huntsman")
+         setOfficerInSlot(2, officer3)*/
 
         //Generate portraits & name based on faction
-
 
 
     }
 
 
-
-
-    fun getOfficersInFleet() : ArrayList<SCOfficer> {
+    fun getOfficersInFleet(): ArrayList<SCOfficer> {
         return ArrayList(officers)
     }
 
@@ -140,13 +135,22 @@ class SCData(var fleet: CampaignFleetAPI) : EveryFrameScript, FleetEventListener
         officers.remove(officer)
     }
 
-    fun getOfficerInSlot(slotIndex: Int) : SCOfficer? {
+    fun getOfficerInSlot(slotIndex: Int): SCOfficer? {
         return activeOfficers.getOrNull(slotIndex)
+    }
+
+    fun findOfficer(o: SCOfficer): Int {
+        for (i in activeOfficers.indices) {
+            if (activeOfficers[i] == o) {
+                return i
+            }
+        }
+        return -1
     }
 
     fun setOfficerInSlot(slotIndex: Int, officer: SCOfficer?) {
         var officerInSlot = getOfficerInSlot(slotIndex)
-        while (activeOfficers.size < 15){
+        while (activeOfficers.size < 15) {
             activeOfficers.add(null)
         }
         activeOfficers[slotIndex] = officer
@@ -169,7 +173,7 @@ class SCData(var fleet: CampaignFleetAPI) : EveryFrameScript, FleetEventListener
         }
     }
 
-    fun hasAptitudeInFleet(aptitudeId: String) : Boolean {
+    fun hasAptitudeInFleet(aptitudeId: String): Boolean {
         return getOfficersInFleet().any { it.aptitudeId == aptitudeId }
     }
 
@@ -187,41 +191,33 @@ class SCData(var fleet: CampaignFleetAPI) : EveryFrameScript, FleetEventListener
 
         if (getOfficerInSlot(0) == null) {
             setOfficerInSlot(0, officer)
-        }
-        else if (getOfficerInSlot(1) == null) {
+        } else if (getOfficerInSlot(1) == null) {
             setOfficerInSlot(1, officer)
-        }
-        else if (getOfficerInSlot(2) == null) {
+        } else if (getOfficerInSlot(2) == null) {
             setOfficerInSlot(2, officer)
-        }
-        else if (getOfficerInSlot(3) == null) {
+        } else if (getOfficerInSlot(3) == null) {
             setOfficerInSlot(3, officer)
         }
     }
 
-    fun getAssignedOfficers() : ArrayList<SCOfficer?> {
+    fun getAssignedOfficers(): ArrayList<SCOfficer?> {
         return ArrayList(activeOfficers)
     }
 
 
-
-    fun getAllActiveSkillsPlugins() : List<SCBaseSkillPlugin> {
+    fun getAllActiveSkillsPlugins(): List<SCBaseSkillPlugin> {
         return getAssignedOfficers().filter { it != null }.flatMap { it!!.getActiveSkillPlugins() }
     }
 
-    fun isSkillActive(skillId: String) : Boolean {
-        return getAssignedOfficers().filter { it != null }.flatMap { it!!.getActiveSkillPlugins().map { it.getId() } }.contains(skillId)
+    fun isSkillActive(skillId: String): Boolean {
+        return getAssignedOfficers().filter { it != null }.flatMap { it!!.getActiveSkillPlugins().map { it.getId() } }
+            .contains(skillId)
     }
 
-    fun getOfficersAssignedSlot(officer: SCOfficer) : Int? {
+    fun getOfficersAssignedSlot(officer: SCOfficer): Int? {
         if (!officer.isAssigned()) return null
 
-        if (getOfficerInSlot(0) == officer) return 0
-        if (getOfficerInSlot(1) == officer) return 1
-        if (getOfficerInSlot(2) == officer) return 2
-        if (getOfficerInSlot(3) == officer) return 3
-
-        return null
+        return findOfficer(officer)
     }
 
 
@@ -250,16 +246,19 @@ class SCData(var fleet: CampaignFleetAPI) : EveryFrameScript, FleetEventListener
         }
 
     }
+
     //we noop that
     fun remove4thOfficer() {
 
     }
 
 
-
-
     //Run deactivation on despawn
-    override fun reportFleetDespawnedToListener(fleet: CampaignFleetAPI?, reason: CampaignEventListener.FleetDespawnReason?, param: Any?) {
+    override fun reportFleetDespawnedToListener(
+        fleet: CampaignFleetAPI?,
+        reason: CampaignEventListener.FleetDespawnReason?,
+        param: Any?
+    ) {
         if (this.fleet == fleet) {
             var skills = getAllActiveSkillsPlugins()
             for (skill in skills) {

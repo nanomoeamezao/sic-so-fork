@@ -16,6 +16,7 @@ import second_in_command.specs.SCBaseAptitudePlugin
 import second_in_command.specs.SCBaseSkillPlugin
 import second_in_command.specs.SCOfficer
 import second_in_command.specs.SCSpecStore
+import second_in_command.misc.logger
 import java.util.*
 
 object NPCOfficerGenerator {
@@ -122,11 +123,17 @@ object NPCOfficerGenerator {
         }
 
 
-        var divide = getRandomNumberInRange(random, 20f, 24f)
+        var divide = getRandomNumberInRange(random, 6f, 12f)
         var maxSkillCount = getRandomNumberInRange(random, minSkills, maxSkills)
-
+        var log = this.logger()
+        log.info("fleet: "+ fleet.name )
+        log.info("combatFP: "+ combatFP)
+        log.info("divide: "+ divide)
         var skillCount = (combatFP / divide).toInt()
-        skillCount = MathUtils.clamp(skillCount, 1, maxSkillCount) //Minimum of atleast 1 skill per fleet
+        log.info("skillcount pre-clamp: " + skillCount)
+        log.info("max skill count: " + maxSkillCount)
+        skillCount = MathUtils.clamp(skillCount, 15, maxSkillCount) //Minimum of atleast 1 skill per fleet
+        log.info("skillcount post-clamp: " + skillCount)
 
         var aptitudeCount = 1
         aptitudeCount = when (skillCount) {
@@ -242,7 +249,7 @@ object NPCOfficerGenerator {
                 var skillsInAptitude = sections.flatMap { it.getSkills() }
                 var unlockedSkillsCount = unlocked.count { skillsInAptitude.contains(it.getId()) }
 
-                if (unlockedSkillsCount >= 5) continue //Dont let it get more than 5 skills
+                if (unlockedSkillsCount >= 8) continue //Dont let it get more than 5 skills
 
                 for (section in sections) {
                     if (unlockedSkillsCount >= section.requiredPreviousSkills) {
