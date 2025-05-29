@@ -333,8 +333,6 @@ class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Bool
 
 
         var aptitudePlugin = officer.getAptitudePlugin()
-        aptitudePlugin.clearSections()
-        aptitudePlugin.createSections()
 
         var paraElement = subelement.addLunaElement(100f, 20f).apply {
             renderBorder = false
