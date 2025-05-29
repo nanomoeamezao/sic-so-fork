@@ -234,8 +234,6 @@ class SCOfficerPickerMenuPanel(var menu: SCSkillMenuPanel, var originalPickerEle
             var officerUnderline = SkillUnderlineElement(aptitudePlugin.getColor(), 2f, inner, 96f)
             officerUnderline.position.belowLeft(officerPickerElement.elementPanel, 2f)
 
-            /*aptitudePlugin.clearSections()
-            aptitudePlugin.createSections()*/
             var sections = aptitudePlugin.getSections()
 
             var originSkill = SCSpecStore.getSkillSpec(aptitudePlugin.getOriginSkillId())
@@ -521,7 +519,7 @@ class SCOfficerPickerMenuPanel(var menu: SCSkillMenuPanel, var originalPickerEle
                 }*/
 
                 //Clear Slots of dismissed officers
-                for (i in 0 ..2) {
+                for (i in 0 ..15) {
                     if (!data.getOfficersInFleet().contains(data.getOfficerInSlot(i))) {
                         menu.recreateAptitudeRow(menu.rowParents.get(i)!!, null, i)
                     }
