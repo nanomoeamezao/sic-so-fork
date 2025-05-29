@@ -519,7 +519,7 @@ class SCOfficerPickerMenuPanel(var menu: SCSkillMenuPanel, var originalPickerEle
                 }*/
 
                 //Clear Slots of dismissed officers
-                for (i in 0 ..15) {
+                for (i in 0 ..14) {
                     if (!data.getOfficersInFleet().contains(data.getOfficerInSlot(i))) {
                         menu.recreateAptitudeRow(menu.rowParents.get(i)!!, null, i)
                     }

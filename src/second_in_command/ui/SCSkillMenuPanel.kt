@@ -5,7 +5,9 @@ import com.fs.starfarer.api.campaign.RepLevel
 import com.fs.starfarer.api.impl.campaign.ids.Sounds
 import com.fs.starfarer.api.ui.Alignment
 import com.fs.starfarer.api.ui.CustomPanelAPI
+import com.fs.starfarer.api.ui.LabelAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
+import com.fs.starfarer.api.ui.UIComponentAPI
 import com.fs.starfarer.api.ui.UIPanelAPI
 import com.fs.starfarer.api.util.Misc
 import lunalib.lunaExtensions.addLunaElement
@@ -21,8 +23,7 @@ import second_in_command.ui.panels.AssosciatesManagePanelPlugin
 import second_in_command.ui.tooltips.OfficerTooltipCreator
 import second_in_command.ui.tooltips.SCSkillTooltipCreator
 
-@Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
-class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Boolean) {
+class SCSkillMenuPanel(var parent: UIPanelAPI, var data: SCData, var title: Boolean,/* var seedTextElement: LabelAPI, var seedElement: UIComponentAPI, var copyButton: UIComponentAPI*/) {
 
 
     lateinit var panel: CustomPanelAPI
