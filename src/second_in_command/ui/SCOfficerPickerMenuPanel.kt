@@ -234,6 +234,8 @@ class SCOfficerPickerMenuPanel(var menu: SCSkillMenuPanel, var originalPickerEle
             var officerUnderline = SkillUnderlineElement(aptitudePlugin.getColor(), 2f, inner, 96f)
             officerUnderline.position.belowLeft(officerPickerElement.elementPanel, 2f)
 
+            /*aptitudePlugin.clearSections()
+            aptitudePlugin.createSections()*/
             var sections = aptitudePlugin.getSections()
 
             var originSkill = SCSpecStore.getSkillSpec(aptitudePlugin.getOriginSkillId())
@@ -319,12 +321,12 @@ class SCOfficerPickerMenuPanel(var menu: SCSkillMenuPanel, var originalPickerEle
                         }
 
                     }
-/*
+
                     if (canOnlyChooseOne) {
                         var underline = SkillUnderlineElement(aptitudePlugin.getColor(), 2f, inner, usedWidth)
                         underline.position.belowLeft(firstSkillThisSection.elementPanel, 2f)
                     }
-*/
+
 
                 }
             }
@@ -404,11 +406,11 @@ class SCOfficerPickerMenuPanel(var menu: SCSkillMenuPanel, var originalPickerEle
 
             var officerParaTextExtra = ""
             var minusText = ""
-/*
+
             if (officerAlreadySlotted(officer)) officerParaTextExtra = "This officer is already assigned."
             else if (doesOffficerMatchExistingAptitude(officer)) officerParaTextExtra = "Can't assign multiple officers of the same aptitude."
             else if (doesOffficerMatchCategory(officer)) officerParaTextExtra = "Can't assign multiple officers that are part of the same category."
-*/
+
             if (officerParaTextExtra != "") minusText = "-"
 
             var officerPara = inner.addPara("${officer.person.nameString} - $spRemaining SP $minusText $officerParaTextExtra", 0f, Misc.getTextColor(), Misc.getHighlightColor(), "$spRemaining")
@@ -519,7 +521,7 @@ class SCOfficerPickerMenuPanel(var menu: SCSkillMenuPanel, var originalPickerEle
                 }*/
 
                 //Clear Slots of dismissed officers
-                for (i in 0 ..15 ) {
+                for (i in 0 ..2) {
                     if (!data.getOfficersInFleet().contains(data.getOfficerInSlot(i))) {
                         menu.recreateAptitudeRow(menu.rowParents.get(i)!!, null, i)
                     }
@@ -680,7 +682,7 @@ class SCOfficerPickerMenuPanel(var menu: SCSkillMenuPanel, var originalPickerEle
 
         return plugin
 
-                }
+    }
 
 
 
@@ -695,7 +697,7 @@ class SCOfficerPickerMenuPanel(var menu: SCSkillMenuPanel, var originalPickerEle
         selectedOfficer = officer
     }
 
-/*
+
     fun doesOffficerMatchExistingAptitude(officer: SCOfficer) : Boolean {
 
         for (active in data.getAssignedOfficers()) {
@@ -725,7 +727,7 @@ class SCOfficerPickerMenuPanel(var menu: SCSkillMenuPanel, var originalPickerEle
 
         return false
     }
-*/
+
     fun officerAlreadySlotted(officer: SCOfficer) : Boolean {
         return data.getAssignedOfficers().contains(officer)
     }

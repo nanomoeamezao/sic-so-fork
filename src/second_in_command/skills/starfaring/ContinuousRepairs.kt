@@ -65,10 +65,6 @@ class ContinuousRepairs : SCBaseSkillPlugin() {
 
     }
 
-    override fun advance(data: SCData, amount: Float) {
-
-    }
-
     override fun onActivation(data: SCData) {
         if (data.isPlayer) {
             if (Global.getSector().allListeners.none { it is ContinuousRepairsListener }) {
