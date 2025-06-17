@@ -94,6 +94,12 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
                 }
             }
             var effectStr = ""
+            if (s.skill.effectsAPI.size == 0){
+                subelement.addTooltip(skillLunaElem.elementPanel, TooltipMakerAPI.TooltipLocation.BELOW, 350f){
+                    it.addPara("id: " + s.skill.id + "\n\ndescription:\n" + s.skill.description, 0f)
+                }
+                continue
+            }
             if (s.skill.effectsAPI.last().type == SkillEffectType.SHIP || s.skill.effectsAPI.last().type == SkillEffectType.ALL_SHIPS_IN_FLEET ) {
                 s.skill.effectsAPI.forEach {
                     var levelName: String
