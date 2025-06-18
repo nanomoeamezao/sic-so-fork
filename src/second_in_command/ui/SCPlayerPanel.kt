@@ -1,28 +1,27 @@
 package second_in_command.ui
 
 import com.fs.starfarer.api.Global
+import com.fs.starfarer.api.characters.LevelBasedEffect
+import com.fs.starfarer.api.characters.SkillEffectType
 import com.fs.starfarer.api.impl.campaign.ids.Sounds
-import com.fs.starfarer.api.ui.Alignment
-import com.fs.starfarer.api.ui.BaseTooltipCreator
-import com.fs.starfarer.api.ui.CustomPanelAPI
-import com.fs.starfarer.api.ui.TooltipMakerAPI
+import com.fs.starfarer.api.impl.codex.CodexDataV2
+import com.fs.starfarer.api.ui.*
 import com.fs.starfarer.api.util.Misc
 import lunalib.lunaExtensions.addLunaElement
 import lunalib.lunaUI.elements.LunaElement
 import lunalib.lunaUI.elements.LunaSpriteElement
 import org.lwjgl.input.Keyboard
 import second_in_command.SCData
-import second_in_command.misc.VanillaSkillTooltip
-import second_in_command.misc.addTooltip
-import second_in_command.misc.clearChildren
-import second_in_command.misc.getAndLoadSprite
-import second_in_command.misc.loadTextureCached
+import second_in_command.misc.*
 import second_in_command.skills.PlayerLevelEffects
 import second_in_command.specs.SCAptitudeSection
+import com.fs.starfarer.api.characters.CustomSkillDescription
+import com.fs.starfarer.api.impl.campaign.ids.Strings
 import second_in_command.ui.elements.*
-import com.fs.starfarer.api.characters.SkillEffectType
+import java.awt.Color
+import kotlin.math.log
 
-class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
+class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData) {
 
     var skillPoints = Global.getSector().playerPerson.stats.points
     var startSkillPoints = Global.getSector().playerPerson.stats.points
@@ -57,7 +56,9 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
         sicSkills.add("sc_utility_skill")
         sicSkills.add("sc_inactive")
 
-        var acquiredSkills = Global.getSector().playerPerson.stats.skillsCopy.filter { !sicSkills.contains(it.skill.id) && !it.skill.id.contains("aptitude") }
+        var acquiredSkills = Global.getSector().playerPerson.stats.skillsCopy.filter {
+            !sicSkills.contains(it.skill.id) && !it.skill.id.contains("aptitude") && it.skill.name != null
+        }
 
         var subelement = subpanel.createUIElement(500f, nonSiCIconSize, false)
         subpanel.addUIElement(subelement)
@@ -66,23 +67,29 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
         anchor.elementPanel.position.inTL(100f, 0f)
         var previous: CustomPanelAPI = anchor.elementPanel
         var headerText = ""
-        if (acquiredSkills.size !=0){
+        if (acquiredSkills.size != 0) {
             headerText = "Non-SiC skills:"
         }
-        var header = subelement.addLunaElement(100f,nonSiCIconSize).apply {
-            renderBorder =  false
+        var header = subelement.addLunaElement(100f, nonSiCIconSize).apply {
+            renderBorder = false
             renderBackground = false
         }
 
         header.elementPanel.position.rightOfTop(previous, 8f)
         previous = header.elementPanel
 
-        var headerPara = header.innerElement.addPara( headerText, 0f)
+        var headerPara = header.innerElement.addPara(headerText, 0f)
         headerPara.position.inTL(0f, 10f)
 
 
-        for (s in acquiredSkills){
-            var skillLunaElem = subelement.addLunaElement(nonSiCIconSize,nonSiCIconSize)
+        for (s in acquiredSkills) {
+            if (s.skill.effectsAPI.size == 0) {
+                continue
+            }
+            if (s.skill.effectsAPI.last().type == SkillEffectType.DESCRIPTION){
+                continue
+            }
+            var skillLunaElem = subelement.addLunaElement(nonSiCIconSize, nonSiCIconSize)
             skillLunaElem.elementPanel.position.rightOfTop(previous, 8f)
             if (s.skill.spriteName != "") {
                 skillLunaElem.render {
@@ -93,43 +100,75 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
                     sprite.render(skillLunaElem.elementPanel.position.x, skillLunaElem.elementPanel.position.y)
                 }
             }
-            var effectStr = ""
-            if (s.skill.effectsAPI.size == 0){
-                subelement.addTooltip(skillLunaElem.elementPanel, TooltipMakerAPI.TooltipLocation.BELOW, 350f){
-                    it.addPara("id: " + s.skill.id + "\n\ndescription:\n" + s.skill.description, 0f)
-                }
-                continue
-            }
-            if (s.skill.effectsAPI.last().type == SkillEffectType.SHIP || s.skill.effectsAPI.last().type == SkillEffectType.ALL_SHIPS_IN_FLEET ) {
-                s.skill.effectsAPI.forEach {
-                    var levelName: String
-                    if (it.name != null){
-                        levelName = it.name
-                    }else  {
-                        levelName = "Base"
-                    }
-                    var effText = it.asShipEffect.getEffectDescription(1f)
-                    if (effText != null && effText != "") {
-                        effectStr += levelName + ": " + effText +"\n"
-                    }
 
-                }
-            }else if (s.skill.effectsAPI.last().type == SkillEffectType.DESCRIPTION){
-                s.skill.effectsAPI.forEach {
-                    var levelName: String
-                    if (it.name != null){
-                        levelName = it.name
-                    }else  {
-                        levelName = "Base"
+            subelement.addTooltip(skillLunaElem.elementPanel, TooltipMakerAPI.TooltipLocation.BELOW, 350f) {
+                it.addPara(s.skill.name, 0f, Misc.getHighlightColor(),Misc.getHighlightColor())
+                val scopeDescription: LevelBasedEffect.ScopeDescription? = s.skill.scope
+                if (scopeDescription != null) {
+
+                    var str1 : String?=  convertScopeDescription(s.skill.scope)
+                    var str2 : String? = convertScopeDescription(s.skill.scope2)
+                    if (scopeDescription == LevelBasedEffect.ScopeDescription.CUSTOM) str1 = s.skill.scopeStr
+                    if (s.skill.scope2 == LevelBasedEffect.ScopeDescription.CUSTOM) str2 = s.skill.scopeStr2
+                    if (str1 != null) {
+                        if (str2 != null) {
+                            it.addPara("Affects: ${str1} and $str2", 10f, Misc.getGrayColor(), Misc.getBasePlayerColor(), str1, str2)
+                        } else {
+                            it.addPara("Affects: ${str1}", 10f, Misc.getGrayColor(), Misc.getBasePlayerColor(), str1)
+                        }
                     }
-                    var effText = it.asDescriptionEffect.string
-                    if (effText != null && effText != ""){
-                        effectStr += levelName + ": " + it.asDescriptionEffect.string + "\n"
-                    }
                 }
-            }
-            subelement.addTooltip(skillLunaElem.elementPanel, TooltipMakerAPI.TooltipLocation.BELOW, 350f){
-                it.addPara("id: " + s.skill.id + "\neff count: " + s.skill.effectsAPI.count() + "\n last eff type: " + s.skill.effectsAPI.last().type + "\n\ndescription:\n" + s.skill.description + "\n\neffect: \n" +  effectStr   , 0f)
+                it.addPara(s.skill.description + " - " + s.skill.author)
+
+                var effectStr = ""
+                var currentTtp = it
+                if (s.skill.effectsAPI.last().type == SkillEffectType.SHIP || s.skill.effectsAPI.last().type == SkillEffectType.ALL_SHIPS_IN_FLEET || s.skill.effectsAPI.last().type == SkillEffectType.ALL_FIGHTERS_IN_FLEET || s.skill.effectsAPI.last().type == SkillEffectType.SHIP_FIGHTERS) {
+                    s.skill.effectsAPI.forEach {
+                        var levelName: String
+                        if (it.name != null) {
+                            levelName = it.name
+                        } else {
+                            levelName = "Base"
+                        }
+                        var e = it.asShipEffect
+                        if ( e is CustomSkillDescription){
+                            if(e.hasCustomDescription()) {
+                                currentTtp.addPara("")
+                                e.createCustomDescription(
+                                    Global.getSector().playerPerson.stats, s.skill,
+                                    currentTtp, 350f
+                                )
+                                currentTtp.addPara("")
+                            }
+                        }else {
+                            var effText = it.asShipEffect.getEffectDescription(1f)
+                            if (effText != null && effText != "") {
+                                effectStr += levelName + ": " + effText + "\n"
+                            }
+                        }
+
+                    }
+                } else if (s.skill.effectsAPI.last().type == SkillEffectType.CHARACTER_STATS || s.skill.effectsAPI.last().type == SkillEffectType.FLEET) {
+                    s.skill.effectsAPI.forEach {
+                            effectStr += it.asLevelBasedEffect.getEffectDescription(s.level) +"\n"
+                    }
+                } else if (s.skill.effectsAPI.last().type == SkillEffectType.ALL_OUTPOSTS || s.skill.effectsAPI.last().type == SkillEffectType.GOVERNED_OUTPOST) {
+                        s.skill.effectsAPI.forEach {
+                            effectStr += it.asMarketEffect.getEffectDescription(s.level) + "\n"
+                        }
+                }
+
+                if (effectStr != ""){
+                    effectStr = effectStr.replace("%", "%%")
+                    it.addPara("\n $effectStr",0f,Misc.getHighlightColor(),Misc.getHighlightColor())
+                }
+                it.addPara("DEBUG:")
+                it.addPara(s.skill.id)
+                it.addPara(
+                    "eff count: " + s.skill.effectsAPI.count() + "\n last eff type: " + s.skill.effectsAPI.last().type + "\n\n",
+                    0f
+                )
+
             }
             previous = skillLunaElem.elementPanel
         }
@@ -146,7 +185,8 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
         subelement.position.inTL(300f, 0f)
 
 
-        var acquiredSkillsIds = Global.getSector().playerPerson.stats.skillsCopy.filter { it.level >= 2 }.map { it.skill.id }
+        var acquiredSkillsIds =
+            Global.getSector().playerPerson.stats.skillsCopy.filter { it.level >= 2 }.map { it.skill.id }
 
         var player = Global.getSector().playerPerson
         var color = Global.getSettings().getSkillSpec("aptitude_combat").governingAptitudeColor
@@ -173,18 +213,21 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
         background.elementPanel.position.inTL(10f, 12f)
 
 
-
         //Aptitude Icon
         var path = "graphics/secondInCommand/combat_icon.png"
         Global.getSettings().loadTextureCached(path)
-        var aptitudeIconElement = CombatSkillWidgetElement("helmsmanship", true, false, true, path, "combat2", color, subelement, 96f, 96f)
+        var aptitudeIconElement =
+            CombatSkillWidgetElement("helmsmanship", true, false, true, path, "combat2", color, subelement, 96f, 96f)
 
         //var combatIcon = subelement.addLunaSpriteElement("graphics/secondInCommand/combat_icon.png", LunaSpriteElement.ScalingTypes.STRETCH_SPRITE, 110f, 110f)
         aptitudeIconElement.elementPanel.position.inTL(28f, 76f)
 
         aptitudeIconElement.innerElement.setParaFont("graphics/fonts/victor14.fnt")
         var aptitudePara = aptitudeIconElement.innerElement.addPara("Combat", 0f, color, color)
-        aptitudePara.position.inTL(aptitudeIconElement.width / 2 - aptitudePara.computeTextWidth(aptitudePara.text) / 2 , -aptitudePara.computeTextHeight(aptitudePara.text)-5)
+        aptitudePara.position.inTL(
+            aptitudeIconElement.width / 2 - aptitudePara.computeTextWidth(aptitudePara.text) / 2,
+            -aptitudePara.computeTextHeight(aptitudePara.text) - 5
+        )
 
         var combatSkillUnderline = SkillUnderlineElement(color, 2f, subelement, 96f)
         combatSkillUnderline.position.belowLeft(aptitudeIconElement.elementPanel, 2f)
@@ -195,22 +238,39 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
                 var maxLevel = plugin.maxLevel
                 var maxSkillPoints = 0
                 var storyPoins = Global.getSector().playerPerson.stats.storyPoints
-                for (i in 1 .. plugin.maxLevel) {
+                for (i in 1..plugin.maxLevel) {
                     maxSkillPoints += plugin.getPointsAtLevel(i)
                 }
 
-                tooltip!!.addPara("This section of skills are the players own set of in-combat skills. You can use your own skill points to acquire them in any order. All player skills are elite by default.", 0f,
-                    Misc.getTextColor(), Misc.getHighlightColor(), "skill points", "in any order", "elite")
+                tooltip!!.addPara(
+                    "This section of skills are the players own set of in-combat skills. You can use your own skill points to acquire them in any order. All player skills are elite by default.",
+                    0f,
+                    Misc.getTextColor(),
+                    Misc.getHighlightColor(),
+                    "skill points",
+                    "in any order",
+                    "elite"
+                )
 
                 tooltip.addSpacer(10f)
 
-                tooltip!!.addPara("You gain 1 skill point for every 2nd level. In total, $maxSkillPoints skill points will be available after you reach the maximum level of $maxLevel.",
-                    0f, Misc.getTextColor(), Misc.getHighlightColor(), "1", "2nd", "$maxSkillPoints", "$maxLevel")
+                tooltip!!.addPara(
+                    "You gain 1 skill point for every 2nd level. In total, $maxSkillPoints skill points will be available after you reach the maximum level of $maxLevel.",
+                    0f, Misc.getTextColor(), Misc.getHighlightColor(), "1", "2nd", "$maxSkillPoints", "$maxLevel"
+                )
 
                 tooltip.addSpacer(10f)
 
-                tooltip!!.addPara("All skills except for \"System Expertise\" and \"Missile Specialization\" require just 1 skill point. The skills just mentioned require 2.", 0f,
-                    Misc.getTextColor(), Misc.getHighlightColor(), "System Expertise", "Missile Specialization", "1", "2")
+                tooltip!!.addPara(
+                    "All skills except for \"System Expertise\" and \"Missile Specialization\" require just 1 skill point. The skills just mentioned require 2.",
+                    0f,
+                    Misc.getTextColor(),
+                    Misc.getHighlightColor(),
+                    "System Expertise",
+                    "Missile Specialization",
+                    "1",
+                    "2"
+                )
 
                 tooltip.addSpacer(10f)
 
@@ -222,19 +282,27 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
                     extra = "Does not work while editing your active skills."
                 }
 
-                var label = tooltip!!.addPara("You can refund all combat skills by pressing \"R\" while hovering over this icon. This costs a story point to do. $extra", 0f,
-                    Misc.getTextColor(), Misc.getHighlightColor(), "")
+                var label = tooltip!!.addPara(
+                    "You can refund all combat skills by pressing \"R\" while hovering over this icon. This costs a story point to do. $extra",
+                    0f,
+                    Misc.getTextColor(),
+                    Misc.getHighlightColor(),
+                    ""
+                )
 
                 label.setHighlight("R", "story point", extra)
-                label.setHighlightColors(Misc.getHighlightColor(), Misc.getStoryOptionColor(), Misc.getNegativeHighlightColor())
+                label.setHighlightColors(
+                    Misc.getHighlightColor(),
+                    Misc.getStoryOptionColor(),
+                    Misc.getNegativeHighlightColor()
+                )
 
             }
 
             override fun getTooltipWidth(tooltipParam: Any?): Float {
                 return 400f
             }
-        }, aptitudeIconElement.elementPanel, TooltipMakerAPI.TooltipLocation.RIGHT )
-
+        }, aptitudeIconElement.elementPanel, TooltipMakerAPI.TooltipLocation.RIGHT)
 
 
         var count = 0
@@ -251,7 +319,7 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
             count += 1
             if (count == 8) {
                 var lowerAnchor = subelement.addLunaElement(0f, 0f)
-                lowerAnchor.elementPanel.position.belowLeft(anchor.elementPanel, 72f +7 + 8f)
+                lowerAnchor.elementPanel.position.belowLeft(anchor.elementPanel, 72f + 7 + 8f)
                 previous = lowerAnchor.elementPanel
             }
 
@@ -268,7 +336,19 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
                 activated = true
             }
 
-            var skillElement = SkillWidgetElement(skill, "combat", activated, !preacquired, preacquired, skillSpec.spriteName, "combat2", color, subelement, 72f, 72f)
+            var skillElement = SkillWidgetElement(
+                skill,
+                "combat",
+                activated,
+                !preacquired,
+                preacquired,
+                skillSpec.spriteName,
+                "combat2",
+                color,
+                subelement,
+                72f,
+                72f
+            )
             skillElement.elementPanel.position.rightOfTop(previous, 16f)
             previous = skillElement.elementPanel
             skillElements.add(skillElement)
@@ -287,13 +367,12 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
                 firstSkill = skillElement.elementPanel
             }
 
-            usedWidth+=72f
+            usedWidth += 72f
 
-           /* if (count == 7) {
-                var underline = SkillUnderlineElement(color, 1f, subelement, usedWidth)
-                underline.position.belowLeft(firstSkill, 3f+8f)
-            }*/
-
+            /* if (count == 7) {
+                 var underline = SkillUnderlineElement(color, 1f, subelement, usedWidth)
+                 underline.position.belowLeft(firstSkill, 3f+8f)
+             }*/
 
 
             /*if (!isLast && count != 7) {
@@ -313,8 +392,7 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
 
                     if (!skillElement.activated) {
                         skillElement.playSound(skillElement.soundId)
-                    }
-                    else {
+                    } else {
                         skillElement.playSound("ui_char_decrease_skill")
                     }
 
@@ -345,7 +423,7 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
             skillPoints = startSkillPoints - getCurrentSkillPointsUsed(skillElements)
         }
 
-        aptitudeIconElement.onInput {events ->
+        aptitudeIconElement.onInput { events ->
             if (aptitudeIconElement.isHovering) {
                 for (event in events!!) {
                     if (event.isConsumed) continue
@@ -363,7 +441,11 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
         }
     }
 
-    fun resetSkills(subpanel: CustomPanelAPI, aptitudeIcon: CombatSkillWidgetElement, skillElements: ArrayList<SkillWidgetElement>) {
+    fun resetSkills(
+        subpanel: CustomPanelAPI,
+        aptitudeIcon: CombatSkillWidgetElement,
+        skillElements: ArrayList<SkillWidgetElement>
+    ) {
         var active = skillElements.filter { it.activated }
         var count = active.count()
 
@@ -389,7 +471,11 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
         recreatePlayerPanel(subpanel)
     }
 
-    fun enterEditMode(subpanel: CustomPanelAPI, aptitudeIcon: CombatSkillWidgetElement, skillElements: ArrayList<SkillWidgetElement>) {
+    fun enterEditMode(
+        subpanel: CustomPanelAPI,
+        aptitudeIcon: CombatSkillWidgetElement,
+        skillElements: ArrayList<SkillWidgetElement>
+    ) {
         if (aptitudeIcon.isInEditMode) return
         aptitudeIcon.isInEditMode = true
 
@@ -441,12 +527,12 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
         stats.points -= spCost
     }
 
-    fun getSkillPointCost(skillId: String) : Int {
+    fun getSkillPointCost(skillId: String): Int {
         if (skillId == "systems_expertise" || skillId == "missile_specialization") return 2
         return 1
     }
 
-    fun getCurrentSkillPointsUsed(skillElements: List<SkillWidgetElement>) : Int {
+    fun getCurrentSkillPointsUsed(skillElements: List<SkillWidgetElement>): Int {
         var points = 0
         for (element in skillElements) {
             if (!element.preAcquired && element.activated) {
@@ -484,7 +570,7 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
                     player.name.first = nameElement.getText()
                 } else {
                     var first = nameElement.getText().substring(0, space)
-                    var last = nameElement.getText().substring(space+1, nameElement.getText().length)
+                    var last = nameElement.getText().substring(space + 1, nameElement.getText().length)
                     var fullname = "$first $last"
 
                     if (last == "") {
@@ -510,7 +596,13 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
         }, nameElement.elementPanel, TooltipMakerAPI.TooltipLocation.RIGHT)
 
 
-        var portrait = LunaSpriteElement(player.portraitSprite, LunaSpriteElement.ScalingTypes.STRETCH_SPRITE, subelement, 128f, 128f)
+        var portrait = LunaSpriteElement(
+            player.portraitSprite,
+            LunaSpriteElement.ScalingTypes.STRETCH_SPRITE,
+            subelement,
+            128f,
+            128f
+        )
         portrait.elementPanel.position.belowLeft(nameElement.elementPanel, 15f)
 
         var placeholder = LunaElement(subelement, 0f, 0f)
@@ -531,25 +623,31 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
 
                 var maxLevel = plugin.maxLevel
                 var maxSkillPoints = 0
-                for (i in 1 .. plugin.maxLevel) {
+                for (i in 1..plugin.maxLevel) {
                     maxSkillPoints += plugin.getPointsAtLevel(i)
                 }
 
-                tooltip!!.addPara("Learning a skill requires one skill point. The player and their executive officers skill points are separate. " +
-                        "This number shows the skill points the player has.", 0f, Misc.getTextColor(), Misc.getHighlightColor(), "one")
+                tooltip!!.addPara(
+                    "Learning a skill requires one skill point. The player and their executive officers skill points are separate. " +
+                            "This number shows the skill points the player has.",
+                    0f,
+                    Misc.getTextColor(),
+                    Misc.getHighlightColor(),
+                    "one"
+                )
 
                 tooltip.addSpacer(10f)
 
-                tooltip!!.addPara("You gain 1 skill point for every 2nd level. In total, $maxSkillPoints skill points will be available after you reach the maximum level of $maxLevel.",
-                    0f, Misc.getTextColor(), Misc.getHighlightColor(), "1", "2nd", "$maxSkillPoints", "$maxLevel")
+                tooltip!!.addPara(
+                    "You gain 1 skill point for every 2nd level. In total, $maxSkillPoints skill points will be available after you reach the maximum level of $maxLevel.",
+                    0f, Misc.getTextColor(), Misc.getHighlightColor(), "1", "2nd", "$maxSkillPoints", "$maxLevel"
+                )
             }
 
             override fun getTooltipWidth(tooltipParam: Any?): Float {
                 return 400f
             }
-        }, skillBox.elementPanel, TooltipMakerAPI.TooltipLocation.RIGHT )
-
-
+        }, skillBox.elementPanel, TooltipMakerAPI.TooltipLocation.RIGHT)
 
 
         //Storypoints
@@ -562,43 +660,55 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
                 var spPerLevel = plugin.storyPointsPerLevel
 
 
-                tooltip!!.addPara("Using story points enables you to take actions that are in some way exceptional.",
-                    0f, Misc.getTextColor(), Misc.getStoryOptionColor(), "story points")
+                tooltip!!.addPara(
+                    "Using story points enables you to take actions that are in some way exceptional.",
+                    0f, Misc.getTextColor(), Misc.getStoryOptionColor(), "story points"
+                )
 
                 tooltip.addSpacer(10f)
 
-                tooltip!!.addPara("The range of effects includes making permanent modifications to ships, officer customisation, and getting dialog options that are not otherwise available," +
-                        " such as disengaging unscathed from battle you do not want.",
-                    0f, Misc.getTextColor(), Misc.getStoryOptionColor(), "")
+                tooltip!!.addPara(
+                    "The range of effects includes making permanent modifications to ships, officer customisation, and getting dialog options that are not otherwise available," +
+                            " such as disengaging unscathed from battle you do not want.",
+                    0f, Misc.getTextColor(), Misc.getStoryOptionColor(), ""
+                )
 
                 tooltip.addSpacer(10f)
 
-                tooltip!!.addPara("You gain $spPerLevel story points over the course of each level. In addition, you will continue to gain story points after reaching the maximum level.",
-                    0f, Misc.getTextColor(), Misc.getStoryOptionColor(), "$spPerLevel")
+                tooltip!!.addPara(
+                    "You gain $spPerLevel story points over the course of each level. In addition, you will continue to gain story points after reaching the maximum level.",
+                    0f, Misc.getTextColor(), Misc.getStoryOptionColor(), "$spPerLevel"
+                )
 
                 tooltip.addSpacer(10f)
                 tooltip.addSectionHeading("Bonus Experience", Alignment.MID, 0f)
                 tooltip.addSpacer(10f)
 
-                tooltip!!.addPara("Some uses of story points grant bonus experience, which doubles your experience gain until it's used up.",
-                    0f, Misc.getTextColor(), Misc.getStoryOptionColor(), "bonus experience")
+                tooltip!!.addPara(
+                    "Some uses of story points grant bonus experience, which doubles your experience gain until it's used up.",
+                    0f, Misc.getTextColor(), Misc.getStoryOptionColor(), "bonus experience"
+                )
 
                 tooltip.addSpacer(10f)
 
-                tooltip!!.addPara("The less long-term or impactful the use, the more bonus experience it grants. 100%% bonus experience means \"enough to earn an extra story point\", " +
-                        "eventually compensating for the use of the story point entirely.",
-                    0f, Misc.getTextColor(), Misc.getStoryOptionColor(), "100%")
+                tooltip!!.addPara(
+                    "The less long-term or impactful the use, the more bonus experience it grants. 100%% bonus experience means \"enough to earn an extra story point\", " +
+                            "eventually compensating for the use of the story point entirely.",
+                    0f, Misc.getTextColor(), Misc.getStoryOptionColor(), "100%"
+                )
 
                 tooltip.addSpacer(10f)
 
-                tooltip!!.addPara("Some of the bonus experience is granted immediately, while the remainder is gained on reaching the maximum level.",
-                    0f, Misc.getTextColor(), Misc.getStoryOptionColor(), "")
+                tooltip!!.addPara(
+                    "Some of the bonus experience is granted immediately, while the remainder is gained on reaching the maximum level.",
+                    0f, Misc.getTextColor(), Misc.getStoryOptionColor(), ""
+                )
             }
 
             override fun getTooltipWidth(tooltipParam: Any?): Float {
                 return 400f
             }
-        }, storyBox.elementPanel, TooltipMakerAPI.TooltipLocation.RIGHT )
+        }, storyBox.elementPanel, TooltipMakerAPI.TooltipLocation.RIGHT)
 
 
         //XPBar
@@ -608,9 +718,9 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
         subelement.addSpacer(7f)
         var level = Global.getSector().playerPerson.stats.level
         var levelText = "-Hover over the bar to view level up effects\n" +
-                        "-Level $level"
+                "-Level $level"
         if (level >= Global.getSettings().levelupPlugin.maxLevel) levelText += " (maximum)"
-        var levelPara = subelement.addPara("$levelText", 0f, Misc.getGrayColor(), Misc.getHighlightColor(),  "$level")
+        var levelPara = subelement.addPara("$levelText", 0f, Misc.getGrayColor(), Misc.getHighlightColor(), "$level")
 
         subelement.addTooltipTo(object : BaseTooltipCreator() {
             override fun createTooltip(tooltip: TooltipMakerAPI?, expanded: Boolean, tooltipParam: Any?) {
@@ -624,31 +734,48 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
 
 
                 var xpInThisLevel = xp - plugin.getXPForLevel(level)
-                var xpForThisLevel =  plugin.getXPForLevel(level+1) - plugin.getXPForLevel(level)
+                var xpForThisLevel = plugin.getXPForLevel(level + 1) - plugin.getXPForLevel(level)
 
                 var maxSkillPoints = 0
-                for (i in 1 .. plugin.maxLevel) {
+                for (i in 1..plugin.maxLevel) {
                     maxSkillPoints += plugin.getPointsAtLevel(i)
                 }
 
-                tooltip!!.addPara("Current level: $level, maximum is $maxLevel.", 0f, Misc.getTextColor(), Misc.getHighlightColor(), "$level", "$maxLevel")
+                tooltip!!.addPara(
+                    "Current level: $level, maximum is $maxLevel.",
+                    0f,
+                    Misc.getTextColor(),
+                    Misc.getHighlightColor(),
+                    "$level",
+                    "$maxLevel"
+                )
 
                 tooltip.addSpacer(10f)
 
                 var xpString = Misc.getWithDGS(xpInThisLevel.toFloat())
                 var xpRequiredString = Misc.getWithDGS(xpForThisLevel.toFloat())
 
-                tooltip!!.addPara("$xpString out of $xpRequiredString experience gained towards next level.", 0f,
-                    Misc.getTextColor(), Misc.getHighlightColor(), "$xpString", "$xpRequiredString")
+                tooltip!!.addPara(
+                    "$xpString out of $xpRequiredString experience gained towards next level.", 0f,
+                    Misc.getTextColor(), Misc.getHighlightColor(), "$xpString", "$xpRequiredString"
+                )
 
                 tooltip.addSpacer(10f)
 
-                tooltip!!.addPara("You gain an additional skill point on every 2nd level.", 0f, Misc.getTextColor(), Misc.getHighlightColor(), "2nd")
+                tooltip!!.addPara(
+                    "You gain an additional skill point on every 2nd level.",
+                    0f,
+                    Misc.getTextColor(),
+                    Misc.getHighlightColor(),
+                    "2nd"
+                )
 
                 tooltip.addSpacer(10f)
 
-                tooltip!!.addPara("You gain $spPerLevel story points over the course of each level. In addition, you will continue to gain story points after reaching the maximum level.",
-                    0f, Misc.getTextColor(), Misc.getStoryOptionColor(), "$spPerLevel")
+                tooltip!!.addPara(
+                    "You gain $spPerLevel story points over the course of each level. In addition, you will continue to gain story points after reaching the maximum level.",
+                    0f, Misc.getTextColor(), Misc.getStoryOptionColor(), "$spPerLevel"
+                )
 
 
 
@@ -662,20 +789,26 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
 
                 var bonusXPString = Misc.getWithDGS(bonusXp.toFloat())
 
-                tooltip!!.addPara("You have $bonusXPString bonus experience. Bonus experience doubles your experience until it's used up, and is acquired by using story points in certain ways.",
-                    0f, Misc.getTextColor(), Misc.getStoryOptionColor(), "$bonusXPString")
+                tooltip!!.addPara(
+                    "You have $bonusXPString bonus experience. Bonus experience doubles your experience until it's used up, and is acquired by using story points in certain ways.",
+                    0f, Misc.getTextColor(), Misc.getStoryOptionColor(), "$bonusXPString"
+                )
 
                 tooltip.addSpacer(10f)
 
-                tooltip!!.addPara("After reaching the maximum level, bonus experience quadruples your experience instead.",
-                    0f, Misc.getTextColor(), Misc.getStoryOptionColor(), "quadruples")
+                tooltip!!.addPara(
+                    "After reaching the maximum level, bonus experience quadruples your experience instead.",
+                    0f, Misc.getTextColor(), Misc.getStoryOptionColor(), "quadruples"
+                )
 
                 tooltip.addSpacer(10f)
 
                 var extraBonusXPString = Misc.getWithDGS(extraBonusXP.toFloat())
 
-                tooltip!!.addPara("You will gain $extraBonusXPString additional bonus experience on reaching the maximum level, based on your use of story points so far.",
-                    0f, Misc.getTextColor(), Misc.getStoryOptionColor(), "$extraBonusXPString")
+                tooltip!!.addPara(
+                    "You will gain $extraBonusXPString additional bonus experience on reaching the maximum level, based on your use of story points so far.",
+                    0f, Misc.getTextColor(), Misc.getStoryOptionColor(), "$extraBonusXPString"
+                )
 
 
 
@@ -684,12 +817,12 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
                 tooltip.addSectionHeading("Level Up Effects", Alignment.MID, 0f)
                 tooltip.addSpacer(10f)
 
-                for (i in 0 .. maxLevel) {
+                for (i in 0..maxLevel) {
                     var text = PlayerLevelEffects.getTooltipForLevel(i)
                     if (text == "") continue
                     var color = PlayerLevelEffects.getColor(i)
 
-                    tooltip.addPara(" - Lv$i: $text",  0f, color, Misc.getHighlightColor(), "Lv$i:")
+                    tooltip.addPara(" - Lv$i: $text", 0f, color, Misc.getHighlightColor(), "Lv$i:")
                 }
 
                 tooltip.addSpacer(5f)
@@ -698,36 +831,36 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
             override fun getTooltipWidth(tooltipParam: Any?): Float {
                 return 410f
             }
-        }, xpBar.elementPanel, TooltipMakerAPI.TooltipLocation.RIGHT )
+        }, xpBar.elementPanel, TooltipMakerAPI.TooltipLocation.RIGHT)
 
 
         subelement.addSpacer(10f)
-/*
-        var color = Global.getSettings().getSkillSpec("aptitude_combat").governingAptitudeColor
-        var confirmButton = subelement.addLunaElement(125f, 30f).apply {
-            backgroundAlpha = 0.2f
-            borderAlpha = 0.5f
-            enableTransparency = true
-            backgroundColor = color
-            borderColor = color
+        /*
+                var color = Global.getSettings().getSkillSpec("aptitude_combat").governingAptitudeColor
+                var confirmButton = subelement.addLunaElement(125f, 30f).apply {
+                    backgroundAlpha = 0.2f
+                    borderAlpha = 0.5f
+                    enableTransparency = true
+                    backgroundColor = color
+                    borderColor = color
 
-            innerElement.setParaFont("graphics/fonts/victor14.fnt")
-            addText("Confirm")
-            centerText()
-        }
+                    innerElement.setParaFont("graphics/fonts/victor14.fnt")
+                    addText("Confirm")
+                    centerText()
+                }
 
-        var cancelButton = subelement.addLunaElement(125f, 30f).apply {
-            backgroundAlpha = 0.2f
-            borderAlpha = 0.5f
-            enableTransparency = true
-            backgroundColor = color
-            borderColor = color
+                var cancelButton = subelement.addLunaElement(125f, 30f).apply {
+                    backgroundAlpha = 0.2f
+                    borderAlpha = 0.5f
+                    enableTransparency = true
+                    backgroundColor = color
+                    borderColor = color
 
-            innerElement.setParaFont("graphics/fonts/victor14.fnt")
-            addText("Cancel")
-            centerText()
-        }
-        cancelButton.elementPanel.position.rightOfTop(confirmButton.elementPanel, 10f)*/
+                    innerElement.setParaFont("graphics/fonts/victor14.fnt")
+                    addText("Cancel")
+                    centerText()
+                }
+                cancelButton.elementPanel.position.rightOfTop(confirmButton.elementPanel, 10f)*/
 
         var line = subelement.addLunaElement(2f, 240f).apply {
             enableTransparency = true
@@ -740,6 +873,32 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData)  {
         recreateAptitudePanel(subpanel)
     }
 
+    fun convertScopeDescription(paramScopeDescription : LevelBasedEffect.ScopeDescription? ) : String? {
+        if (paramScopeDescription == null) {
+            return null
+        }
+        var str = " in fleet";
+        if (paramScopeDescription == LevelBasedEffect.ScopeDescription.ALL_SHIPS) {
+            return "all ships" + str;
+        } else if (paramScopeDescription == LevelBasedEffect.ScopeDescription.ALL_COMBAT_SHIPS) {
+            return "all combat ships" + str + ", including carriers and militarized civilian ships";
+        } else if (paramScopeDescription == LevelBasedEffect.ScopeDescription.ALL_FIGHTERS) {
+            return "all fighters" + str;
+        } else if (paramScopeDescription == LevelBasedEffect.ScopeDescription.SHIP_FIGHTERS) {
+            return "fighters from piloted ship";
+        } else if (paramScopeDescription == LevelBasedEffect.ScopeDescription.ALL_OUTPOSTS) {
+            return "all colonies";
+        } else if (paramScopeDescription == LevelBasedEffect.ScopeDescription.GOVERNED_OUTPOST) {
+            return "governed colony";
+        } else if (paramScopeDescription == LevelBasedEffect.ScopeDescription.PILOTED_SHIP) {
+            return "piloted ship";
+        } else if (paramScopeDescription == LevelBasedEffect.ScopeDescription.FLEET) {
+            return "fleet";
+        } else if (paramScopeDescription == LevelBasedEffect.ScopeDescription.NONE){
+            return null
+        }
+        return "unknown";
+    }
 
 
 }
