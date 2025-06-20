@@ -103,6 +103,7 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData) {
 
             subelement.addTooltip(skillLunaElem.elementPanel, TooltipMakerAPI.TooltipLocation.BELOW, 350f) {
                 it.addPara(s.skill.name, 0f, Misc.getHighlightColor(),Misc.getHighlightColor())
+                it.codexEntryId = CodexDataV2.getSkillEntryId(s.skill.id)
                 val scopeDescription: LevelBasedEffect.ScopeDescription? = s.skill.scope
                 if (scopeDescription != null) {
 
