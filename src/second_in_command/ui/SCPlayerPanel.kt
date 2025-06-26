@@ -57,7 +57,7 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData) {
         sicSkills.add("sc_inactive")
 
         var acquiredSkills = Global.getSector().playerPerson.stats.skillsCopy.filter {
-            !sicSkills.contains(it.skill.id) && !it.skill.id.contains("aptitude") && it.skill.name != null
+            !sicSkills.contains(it.skill.id) && !it.skill.id.contains("aptitude") && it.skill.name != null &&(it.skill.isAdmiralSkill || it.skill.isCombatOfficerSkill || it.skill.isAdminSkill)
         }
 
         var subelement = subpanel.createUIElement(500f, nonSiCIconSize, false)
@@ -86,7 +86,7 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData) {
             if (s.skill.effectsAPI.size == 0) {
                 continue
             }
-            if (s.skill.effectsAPI.last().type == SkillEffectType.DESCRIPTION){
+            if (s.skill.effectsAPI.last().type == SkillEffectType.DESCRIPTION) {
                 continue
             }
             var skillLunaElem = subelement.addLunaElement(nonSiCIconSize, nonSiCIconSize)
@@ -100,20 +100,26 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData) {
                     sprite.render(skillLunaElem.elementPanel.position.x, skillLunaElem.elementPanel.position.y)
                 }
             }
-
+            previous = skillLunaElem.elementPanel
             subelement.addTooltip(skillLunaElem.elementPanel, TooltipMakerAPI.TooltipLocation.BELOW, 350f) {
-                it.addPara(s.skill.name, 0f, Misc.getHighlightColor(),Misc.getHighlightColor())
+                it.addPara(s.skill.name, 0f, Misc.getHighlightColor(), Misc.getHighlightColor())
                 it.codexEntryId = CodexDataV2.getSkillEntryId(s.skill.id)
                 val scopeDescription: LevelBasedEffect.ScopeDescription? = s.skill.scope
                 if (scopeDescription != null) {
-
-                    var str1 : String?=  convertScopeDescription(s.skill.scope)
-                    var str2 : String? = convertScopeDescription(s.skill.scope2)
+                    var str1: String? = convertScopeDescription(s.skill.scope)
+                    var str2: String? = convertScopeDescription(s.skill.scope2)
                     if (scopeDescription == LevelBasedEffect.ScopeDescription.CUSTOM) str1 = s.skill.scopeStr
                     if (s.skill.scope2 == LevelBasedEffect.ScopeDescription.CUSTOM) str2 = s.skill.scopeStr2
                     if (str1 != null) {
                         if (str2 != null) {
-                            it.addPara("Affects: ${str1} and $str2", 10f, Misc.getGrayColor(), Misc.getBasePlayerColor(), str1, str2)
+                            it.addPara(
+                                "Affects: ${str1} and $str2",
+                                10f,
+                                Misc.getGrayColor(),
+                                Misc.getBasePlayerColor(),
+                                str1,
+                                str2
+                            )
                         } else {
                             it.addPara("Affects: ${str1}", 10f, Misc.getGrayColor(), Misc.getBasePlayerColor(), str1)
                         }
@@ -123,8 +129,8 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData) {
 
                 var effectStr = ""
                 var currentTtp = it
-                if (s.skill.effectsAPI.last().type == SkillEffectType.SHIP || s.skill.effectsAPI.last().type == SkillEffectType.ALL_SHIPS_IN_FLEET || s.skill.effectsAPI.last().type == SkillEffectType.ALL_FIGHTERS_IN_FLEET || s.skill.effectsAPI.last().type == SkillEffectType.SHIP_FIGHTERS) {
-                    s.skill.effectsAPI.forEach {
+                s.skill.effectsAPI.forEach {
+                    if (it.type == SkillEffectType.SHIP || it.type == SkillEffectType.ALL_SHIPS_IN_FLEET || it.type == SkillEffectType.ALL_FIGHTERS_IN_FLEET || it.type == SkillEffectType.SHIP_FIGHTERS) {
                         var levelName: String
                         if (it.name != null) {
                             levelName = it.name
@@ -132,8 +138,8 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData) {
                             levelName = "Base"
                         }
                         var e = it.asShipEffect
-                        if ( e is CustomSkillDescription){
-                            if(e.hasCustomDescription()) {
+                        if (e is CustomSkillDescription) {
+                            if (e.hasCustomDescription()) {
                                 currentTtp.addPara("")
                                 e.createCustomDescription(
                                     Global.getSector().playerPerson.stats, s.skill,
@@ -141,27 +147,22 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData) {
                                 )
                                 currentTtp.addPara("")
                             }
-                        }else {
+                        } else {
                             var effText = it.asShipEffect.getEffectDescription(1f)
                             if (effText != null && effText != "") {
                                 effectStr += levelName + ": " + effText + "\n"
                             }
                         }
-
-                    }
-                } else if (s.skill.effectsAPI.last().type == SkillEffectType.CHARACTER_STATS || s.skill.effectsAPI.last().type == SkillEffectType.FLEET) {
-                    s.skill.effectsAPI.forEach {
-                            effectStr += it.asLevelBasedEffect.getEffectDescription(s.level) +"\n"
-                    }
-                } else if (s.skill.effectsAPI.last().type == SkillEffectType.ALL_OUTPOSTS || s.skill.effectsAPI.last().type == SkillEffectType.GOVERNED_OUTPOST) {
-                        s.skill.effectsAPI.forEach {
+                    } else if (it.type == SkillEffectType.CHARACTER_STATS || it.type == SkillEffectType.FLEET) {
+                            effectStr += it.asLevelBasedEffect.getEffectDescription(s.level) + "\n"
+                    } else if (it.type == SkillEffectType.ALL_OUTPOSTS || it.type == SkillEffectType.GOVERNED_OUTPOST) {
                             effectStr += it.asMarketEffect.getEffectDescription(s.level) + "\n"
-                        }
-                }
+                    }
 
-                if (effectStr != ""){
+                }
+                if (effectStr != "") {
                     effectStr = effectStr.replace("%", "%%")
-                    it.addPara("\n $effectStr",0f,Misc.getHighlightColor(),Misc.getHighlightColor())
+                    it.addPara("\n $effectStr", 0f, Misc.getHighlightColor(), Misc.getHighlightColor())
                 }
                 it.addPara("DEBUG:")
                 it.addPara(s.skill.id)
@@ -169,11 +170,9 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData) {
                     "eff count: " + s.skill.effectsAPI.count() + "\n last eff type: " + s.skill.effectsAPI.last().type + "\n\n",
                     0f
                 )
-
             }
-            previous = skillLunaElem.elementPanel
-        }
 
+        }
     }
 
     fun recreateAptitudePanel(subpanel: CustomPanelAPI) {
