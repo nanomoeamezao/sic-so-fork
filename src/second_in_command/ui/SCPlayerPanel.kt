@@ -26,6 +26,22 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData) {
     var skillPoints = Global.getSector().playerPerson.stats.points
     var startSkillPoints = Global.getSector().playerPerson.stats.points
     var nonSiCIconSize = 35f
+    var sicSkills = arrayListOf<String>("helmsmanship",
+        "combat_endurance",
+        "impact_mitigation",
+        "damage_control",
+        "field_modulation",
+        "target_analysis",
+        "systems_expertise",
+        "point_defense",
+        "energy_weapon_mastery",
+        "ballistic_mastery",
+        "gunnery_implants",
+        "ordnance_expert",
+        "polarized_armor",
+        "missile_specialization",
+        "sc_utility_skill",
+        "sc_inactive")
 
     fun init() {
 
@@ -35,29 +51,13 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData) {
         var subpanel = Global.getSettings().createCustom(width, height, null)
         menu.element.addCustom(subpanel, 0f)
         subpanel.position.inTL(15f, 30f)
-
         recreatePlayerPanel(subpanel)
+        createNonSiCSkillPanel(subpanel)
+    }
 
-        var sicSkills = ArrayList<String>()
-        sicSkills.add("helmsmanship")
-        sicSkills.add("combat_endurance")
-        sicSkills.add("impact_mitigation")
-        sicSkills.add("damage_control")
-        sicSkills.add("field_modulation")
-        sicSkills.add("target_analysis")
-        sicSkills.add("systems_expertise")
-        sicSkills.add("point_defense")
-        sicSkills.add("energy_weapon_mastery")
-        sicSkills.add("ballistic_mastery")
-        sicSkills.add("gunnery_implants")
-        sicSkills.add("ordnance_expert")
-        sicSkills.add("polarized_armor")
-        sicSkills.add("missile_specialization")
-        sicSkills.add("sc_utility_skill")
-        sicSkills.add("sc_inactive")
-
+    private fun createNonSiCSkillPanel(subpanel: CustomPanelAPI) {
         var acquiredSkills = Global.getSector().playerPerson.stats.skillsCopy.filter {
-            !sicSkills.contains(it.skill.id) && !it.skill.id.contains("aptitude") && it.skill.name != null &&(it.skill.isAdmiralSkill || it.skill.isCombatOfficerSkill || it.skill.isAdminSkill)
+            !sicSkills.contains(it.skill.id) && !it.skill.id.contains("aptitude") && it.skill.name != null && (it.skill.isAdmiralSkill || it.skill.isCombatOfficerSkill || it.skill.isAdminSkill)
         }
 
         var subelement = subpanel.createUIElement(500f, nonSiCIconSize, false)
@@ -154,9 +154,9 @@ class SCPlayerPanel(var menu: SCSkillMenuPanel, var data: SCData) {
                             }
                         }
                     } else if (it.type == SkillEffectType.CHARACTER_STATS || it.type == SkillEffectType.FLEET) {
-                            effectStr += it.asLevelBasedEffect.getEffectDescription(s.level) + "\n"
+                        effectStr += it.asLevelBasedEffect.getEffectDescription(s.level) + "\n"
                     } else if (it.type == SkillEffectType.ALL_OUTPOSTS || it.type == SkillEffectType.GOVERNED_OUTPOST) {
-                            effectStr += it.asMarketEffect.getEffectDescription(s.level) + "\n"
+                        effectStr += it.asMarketEffect.getEffectDescription(s.level) + "\n"
                     }
 
                 }

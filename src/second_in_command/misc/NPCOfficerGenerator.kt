@@ -20,6 +20,28 @@ import second_in_command.misc.logger
 import java.util.*
 
 object NPCOfficerGenerator {
+    var aptitudeBlacklist = arrayListOf<String>("sc_starfaring")
+    var skillBlacklist = arrayListOf<String>("sc_tactical_spotters",
+        "sc_management_well_organized",
+        "sc_management_re_entry",
+        "sc_management_command_and_conquer",
+        "sc_management_best_of_the_best",
+        "sc_management_in_good_hands",
+        "sc_smallcraft_low_profile",
+        "sc_strikecraft_synchronised",
+        "sc_technology_neural_link",
+        "sc_technology_makeshift_drones",
+        "sc_warfare_overprepared",
+        "sc_improvisation_derelict_operations",
+        "sc_piracy_legitimate_salvage",
+        "sc_piracy_low_grade_deployment",
+        "sc_piracy_stockpile",
+        "sc_piracy_bounty_board",
+        "sc_piracy_provisional_replacements",
+        "sc_automated_self_repair",
+        "sc_automated_specialised_equipment",
+        "sc_automated_expertise",
+        "sc_automated_neural_junction")
 
     fun isBossFleet(fleet: CampaignFleetAPI) : Boolean {
         var flagship = fleet.flagship
@@ -123,7 +145,7 @@ object NPCOfficerGenerator {
         }
 
 
-        var divide = getRandomNumberInRange(random, 6f, 12f)
+        var divide = getRandomNumberInRange(random, 4f, 6f)
         var maxSkillCount = getRandomNumberInRange(random, minSkills, maxSkills)
         var log = this.logger()
         log.info("fleet: "+ fleet.name )
@@ -195,7 +217,7 @@ object NPCOfficerGenerator {
         }
 
 
-        var noPriority = availableAptitudes.filter { !it.guaranteePick(fleet) }.toMutableList()
+        var noPriority = availableAptitudes.filter { !it.guaranteePick(fleet) && !aptitudeBlacklist.contains(it.id) }.toMutableList()
         for (aptitude in noPriority) {
             aptitudePicker.add(aptitude, aptitude.getNPCFleetSpawnWeight(data, fleet))
         }
@@ -260,7 +282,7 @@ object NPCOfficerGenerator {
                         }
 
                         for (skill in skills) {
-                            if (!unlocked.map { it.getId() }.contains(skill)) {
+                            if (!unlocked.map { it.getId() }.contains(skill) && !skillBlacklist.contains(skill)) {
                                 var plugin = SCSpecStore.getSkillSpec(skill)!!.getPlugin()
                                 unlockable.add(PotentialPick(officer, plugin), plugin.getNPCSpawnWeight(fleet))
                             }
